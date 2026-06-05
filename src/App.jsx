@@ -1,36 +1,32 @@
+import Header from "./components/Header";
+import FilterBar from "./components/FilterBar";
 import TaskList from "./components/TaskList";
-import "./index.css";
+import { useTheme } from "./contexts/ThemeContext";
+import "./App.css";
 
 function App() {
-  const tasks = [
-    {
-      id: 1,
-      title: "ログイン画面を作成",
-      assignee: "泉",
-      priority: "高",
-      status: "未着手",
-    },
-    {
-      id: 2,
-      title: "タスク一覧画面を実装",
-      assignee: "田中",
-      priority: "中",
-      status: "進行中",
-    },
-    {
-      id: 3,
-      title: "READMEを作成",
-      assignee: "佐藤",
-      priority: "低",
-      status: "完了",
-    },
-  ];
+  const { theme } = useTheme();
 
   return (
-    <div>
-      <h1>タスク管理ダッシュボード</h1>
+    <div className={`app ${theme}`}>
+      <aside className="sidebar">
+        <nav>
+          <ul>
+            <li className="active">ダッシュボード</li>
+            <li>タスク一覧</li>
+            <li>カレンダー</li>
+            <li>チーム</li>
+          </ul>
+        </nav>
+      </aside>
 
-      <TaskList tasks={tasks} />
+      <main className="main-content">
+        <Header />
+
+        <FilterBar />
+
+        <TaskList />
+      </main>
     </div>
   );
 }

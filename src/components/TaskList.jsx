@@ -1,9 +1,12 @@
 import TaskCard from "./TaskCard";
+import { useTask } from "../contexts/TaskContext";
 
-function TaskList({ tasks }) {
+function TaskList() {
+  const { filteredTasks } = useTask();
+
   return (
-    <div>
-      {tasks.map((task) => (
+    <div className="task-list">
+      {filteredTasks.map((task) => (
         <TaskCard key={task.id} task={task} />
       ))}
     </div>
