@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "./components/Header";
 import FilterBar from "./components/FilterBar";
 import TaskList from "./components/TaskList";
+import TaskForm from "./components/TaskForm";
 import { useTheme } from "./contexts/ThemeContext";
 import "./App.css";
 
@@ -26,11 +27,7 @@ function App() {
       <main className="main-content">
         <Header />
 
-        {isFormOpen && (
-          <div>
-            タスク追加フォームを表示する場所
-          </div>
-        )}
+        {isFormOpen && <TaskForm onClose={() => setIsFormOpen(false)} />}
 
         <FilterBar />
 
