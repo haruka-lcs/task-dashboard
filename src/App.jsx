@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Header from "./components/Header";
 import FilterBar from "./components/FilterBar";
 import TaskList from "./components/TaskList";
@@ -7,6 +8,8 @@ import "./App.css";
 
 function App() {
   const { theme } = useTheme();
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   return (
     <div className={`app ${theme}`}>
@@ -24,9 +27,18 @@ function App() {
       <main className="main-content">
         <Header />
 
+        {isFormOpen && <TaskForm onClose={() => setIsFormOpen(false)} />}
+
         <FilterBar />
 
         <TaskList />
+
+        <button
+          className="add-task-floating-button"
+          onClick={() => setIsFormOpen(true)}
+        >
+          +
+        </button>
       </main>
     </div>
   );
