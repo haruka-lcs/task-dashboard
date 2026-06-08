@@ -56,6 +56,16 @@ export function TaskProvider({ children }) {
       ? tasks
       : tasks.filter((task) => task.status === filter);
 
+  const addTask = (newTask) => {
+    setTasks((prevTasks) => [
+      ...prevTasks,
+      {
+        id: Date.now(),
+        ...newTask,
+      },
+    ]);
+  };
+
   const deleteTask = (id) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
   };
@@ -67,6 +77,7 @@ export function TaskProvider({ children }) {
         filter,
         setFilter,
         filteredTasks,
+        addTask,
         deleteTask,
       }}
     >
