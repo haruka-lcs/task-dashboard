@@ -9,7 +9,7 @@ function TaskForm({ onClose }) {
   const [priority, setPriority] = useState("中");
   const [status, setStatus] = useState("未着手");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const newTask = {
@@ -19,7 +19,17 @@ function TaskForm({ onClose }) {
       status: status,
     };
 
-    addTask(newTask);
+    const response = await fetch("http://localhost:5153/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newTask),
+    });
+
+    const savedTask = await response.json();
+
+    addTask(savedTask);
     onClose();
   };
 
@@ -74,11 +84,7 @@ function TaskForm({ onClose }) {
           </div>
 
           <div className="task-form-actions">
-            <button
-              type="button"
-              className="task-form-back"
-              onClick={onClose}
-            >
+            <button type="button" className="task-form-back" onClick={onClose}>
               戻る
             </button>
 
