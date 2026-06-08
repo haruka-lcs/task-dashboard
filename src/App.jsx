@@ -1,6 +1,7 @@
 import Header from "./components/Header";
 import FilterBar from "./components/FilterBar";
 import TaskList from "./components/TaskList";
+import TaskForm from "./components/TaskForm";
 import { useTheme } from "./contexts/ThemeContext";
 import "./App.css";
 
