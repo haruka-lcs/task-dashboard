@@ -1,60 +1,38 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const TaskContext = createContext();
 
-const initialTasks = [
-  {
-    id: 1,
-    title: "ログイン画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "未着手",
-  },
-  {
-    id: 2,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "進行中",
-  },
-  {
-    id: 3,
-    title: "アカウント画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "進行中",
-  },
-  {
-    id: 4,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "進行中",
-  },
-  {
-    id: 5,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "中",
-    status: "進行中",
-  },
-  {
-    id: 6,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "低",
-    status: "進行中",
-  },
-];
-
 export function TaskProvider({ children }) {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("すべて");
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch("http://localhost:5153/tasks");
+
+        if (!response.ok) {
+          throw new Error("タスク一覧の取得に失敗しました");
+        }
+
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   const filteredTasks =
     filter === "すべて"
       ? tasks
       : tasks.filter((task) => task.status === filter);
+
+  const addTask = (newTask) => {
+    setTasks((prevTasks) => [...prevTasks, newTask]);
+  };
 
   const deleteTask = (id) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
@@ -67,6 +45,7 @@ export function TaskProvider({ children }) {
         filter,
         setFilter,
         filteredTasks,
+        addTask,
         deleteTask,
       }}
     >
