@@ -4,16 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// OpenAPI / Swagger 用
-builder.Services.AddOpenApi();
-
-// Entity Framework Core + SQLite の設定
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<TaskContext>(options =>
+    options.UseSqlite("Data Source=tasks.db"));
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ReactApp", policy =>
+    options.AddPolicy("AllowReactApp", policy =>
     {
         policy
             .WithOrigins("http://localhost:5173")
@@ -24,32 +20,34 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("ReactApp");
+app.UseCors("AllowReactApp");
 
-if (app.Environment.IsDevelopment())
+app.MapGet("/api/tasks", async (TaskContext context) =>
 {
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
-
-// タスク一覧取得
-app.MapGet("/tasks", async (AppDbContext context) =>
-{
-    var tasks = await context.Tasks.ToListAsync();
-
-    return Results.Ok(tasks);
+    return await context.Tasks.ToListAsync();
 });
 
-// タスク登録 Create
-app.MapPost("/tasks", async (TaskItem task, AppDbContext context) =>
+app.MapPost("/api/tasks", async (TaskItem task, TaskContext context) =>
 {
-    task.CreatedAt = DateTime.Now;
-
     context.Tasks.Add(task);
     await context.SaveChangesAsync();
 
-    return Results.Created($"/tasks/{task.Id}", task);
+    return Results.Created($"/api/tasks/{task.Id}", task);
+});
+
+app.MapDelete("/api/tasks/{id}", async (int id, TaskContext context) =>
+{
+    var task = await context.Tasks.FindAsync(id);
+
+    if (task is null)
+    {
+        return Results.NotFound();
+    }
+
+    context.Tasks.Remove(task);
+    await context.SaveChangesAsync();
+
+    return Results.NoContent();
 });
 
 app.Run();
