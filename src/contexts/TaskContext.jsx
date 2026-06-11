@@ -1,73 +1,102 @@
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 const TaskContext = createContext();
 
-const initialTasks = [
-  {
-    id: 1,
-    title: "ログイン画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "未着手",
-  },
-  {
-    id: 2,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "進行中",
-  },
-  {
-    id: 3,
-    title: "アカウント画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "進行中",
-  },
-  {
-    id: 4,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "高",
-    status: "進行中",
-  },
-  {
-    id: 5,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "中",
-    status: "進行中",
-  },
-  {
-    id: 6,
-    title: "サインイン画面制作",
-    assignee: "泉",
-    priority: "低",
-    status: "進行中",
-  },
-];
+const API_URL = "http://localhost:5228/api/tasks";
 
 export function TaskProvider({ children }) {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("すべて");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+          throw new Error("タスクの取得に失敗しました");
+        }
+
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error(error);
+        setError("タスクを取得できませんでした");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   const filteredTasks =
     filter === "すべて"
       ? tasks
       : tasks.filter((task) => task.status === filter);
 
-  const addTask = (newTask) => {
-    setTasks((prevTasks) => [
-      ...prevTasks,
-      {
-        id: Date.now(),
-        ...newTask,
-      },
-    ]);
+  const addTask = async (newTask) => {
+    try {
+      setError("");
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTask),
+      });
+
+      if (!response.ok) {
+        throw new Error("タスクの追加に失敗しました");
+      }
+
+      const createdTask = await response.json();
+
+      setTasks((prevTasks) => [...prevTasks, createdTask]);
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      setError("タスクを追加できませんでした");
+
+      return false;
+    }
   };
 
-  const deleteTask = (id) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+  const deleteTask = async (id) => {
+    try {
+      setError("");
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("タスクの削除に失敗しました");
+      }
+
+      setTasks((prevTasks) =>
+        prevTasks.filter((task) => task.id !== id)
+      );
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      setError("タスクを削除できませんでした");
+
+      return false;
+    }
   };
 
   return (
@@ -79,6 +108,8 @@ export function TaskProvider({ children }) {
         filteredTasks,
         addTask,
         deleteTask,
+        loading,
+        error,
       }}
     >
       {children}
@@ -87,5 +118,13 @@ export function TaskProvider({ children }) {
 }
 
 export function useTask() {
-  return useContext(TaskContext);
+  const context = useContext(TaskContext);
+
+  if (!context) {
+    throw new Error(
+      "useTaskはTaskProviderの内側で使用してください"
+    );
+  }
+
+  return context;
 }
