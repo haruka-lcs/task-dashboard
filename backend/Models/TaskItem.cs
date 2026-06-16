@@ -6,9 +6,12 @@ public class TaskItem
 
     public string Title { get; set; } = string.Empty;
 
-    public string Assignee { get; set; } = string.Empty;
+    public int UserId { get; set; }
+    public User? User { get; set; }
 
-    public string Priority { get; set; } = string.Empty;
+    public int PriorityId { get; set; }
+    public Priority? Priority { get; set; }
 
-    public string Status { get; set; } = string.Empty;
+    public int StatusId { get; set; }
+    public Status? Status { get; set; }
 }
