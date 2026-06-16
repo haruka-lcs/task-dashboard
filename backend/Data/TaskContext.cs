@@ -11,4 +11,7 @@ public class TaskContext : DbContext
     }
 
     public DbSet<TaskItem> Tasks { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Priority> Priorities { get; set; }
+    public DbSet<Status> Statuses { get; set; }
 }

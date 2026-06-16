@@ -19,18 +19,11 @@ function TaskForm({ onClose }) {
       status: status,
     };
 
-    const response = await fetch("http://localhost:5228/api/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newTask),
-    });
+    const isSuccess = await addTask(newTask);
 
-    const savedTask = await response.json();
-
-    addTask(savedTask);
-    onClose();
+    if (isSuccess) {
+      onClose();
+    }
   };
 
   return (
