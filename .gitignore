@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+cat >> .gitignore <<'EOF'
+
+# ASP.NET Core
+backend/bin/
+backend/obj/
+
+# SQLite
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+EOF
