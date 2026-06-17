@@ -106,6 +106,77 @@ app.MapPost("/api/tasks", async (CreateTaskRequest request, TaskContext context)
     });
 });
 
+app.MapPut("/api/tasks/{id}", async (int id, CreateTaskRequest request, TaskContext context) =>
+{
+    var task = await context.Tasks
+        .Include(task => task.User)
+        .Include(task => task.Priority)
+        .Include(task => task.Status)
+        .FirstOrDefaultAsync(task => task.Id == id);
+
+    if (task is null)
+    {
+        return Results.NotFound();
+    }
+
+    var user = await context.Users
+        .FirstOrDefaultAsync(user => user.Name == request.Assignee);
+
+    if (user is null)
+    {
+        user = new User
+        {
+            Name = request.Assignee
+        };
+
+        context.Users.Add(user);
+    }
+
+    var priority = await context.Priorities
+        .FirstOrDefaultAsync(priority => priority.Name == request.Priority);
+
+    if (priority is null)
+    {
+        priority = new Priority
+        {
+            Name = request.Priority
+        };
+
+        context.Priorities.Add(priority);
+    }
+
+    var status = await context.Statuses
+        .FirstOrDefaultAsync(status => status.Name == request.Status);
+
+    if (status is null)
+    {
+        status = new Status
+        {
+            Name = request.Status
+        };
+
+        context.Statuses.Add(status);
+    }
+
+    task.Title = request.Title;
+    task.User = user;
+    task.Priority = priority;
+    task.Status = status;
+    task.Description = request.Description;
+
+    await context.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        id = task.Id,
+        title = task.Title,
+        assignee = user.Name,
+        priority = priority.Name,
+        status = status.Name,
+        description = task.Description
+    });
+});
+
 app.MapDelete("/api/tasks/{id}", async (int id, TaskContext context) =>
 {
     var task = await context.Tasks.FindAsync(id);
