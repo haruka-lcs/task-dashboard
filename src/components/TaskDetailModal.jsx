@@ -12,23 +12,47 @@ function TaskDetailModal({ task, onClose }) {
   const [status, setStatus] = useState(task.status);
   const [description, setDescription] = useState(task.description || "");
 
+  const [titleError, setTitleError] = useState("");
+  const [assigneeError, setAssigneeError] = useState("");
+
   if (!task) {
     return null;
   }
 
   const handleSave = async () => {
+    setTitleError("");
+    setAssigneeError("");
+
+    let hasError = false;
+
+    if (!title.trim()) {
+      setTitleError("タスク名を入力してください");
+      hasError = true;
+    }
+
+    if (!assignee.trim()) {
+      setAssigneeError("担当者名を入力してください");
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
     const updatedTask = {
-      title: title,
-      assignee: assignee,
+      title: title.trim(),
+      assignee: assignee.trim(),
       priority: priority,
       status: status,
-      description: description,
+      description: description.trim(),
     };
 
     const savedTask = await updateTask(task.id, updatedTask);
 
     if (savedTask) {
       setIsEditing(false);
+      setTitleError("");
+      setAssigneeError("");
       onClose();
     }
   };
@@ -47,11 +71,21 @@ function TaskDetailModal({ task, onClose }) {
           <div className="task-form-row">
             <label>タスク名</label>
             {isEditing ? (
-              <input
-                type="text"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-              />
+              <>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(event) => {
+                    setTitle(event.target.value);
+
+                    if (event.target.value.trim()) {
+                      setTitleError("");
+                    }
+                  }}
+                />
+
+                {titleError && <p className="form-error">{titleError}</p>}
+              </>
             ) : (
               <div className="task-detail-value">{task.title}</div>
             )}
@@ -60,11 +94,23 @@ function TaskDetailModal({ task, onClose }) {
           <div className="task-form-row">
             <label>担当者名</label>
             {isEditing ? (
-              <input
-                type="text"
-                value={assignee}
-                onChange={(event) => setAssignee(event.target.value)}
-              />
+              <>
+                <input
+                  type="text"
+                  value={assignee}
+                  onChange={(event) => {
+                    setAssignee(event.target.value);
+
+                    if (event.target.value.trim()) {
+                      setAssigneeError("");
+                    }
+                  }}
+                />
+
+                {assigneeError && (
+                  <p className="form-error">{assigneeError}</p>
+                )}
+              </>
             ) : (
               <div className="task-detail-value">{task.assignee}</div>
             )}
@@ -135,7 +181,11 @@ function TaskDetailModal({ task, onClose }) {
               <button
                 type="button"
                 className="task-form-submit"
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setTitleError("");
+                  setAssigneeError("");
+                  setIsEditing(true);
+                }}
               >
                 編集
               </button>

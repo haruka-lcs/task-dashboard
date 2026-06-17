@@ -14,6 +14,10 @@ function TaskForm({ onClose }) {
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [newUserName, setNewUserName] = useState("");
 
+  const [titleError, setTitleError] = useState("");
+  const [assigneeError, setAssigneeError] = useState("");
+  const [newUserNameError, setNewUserNameError] = useState("");
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -34,7 +38,10 @@ function TaskForm({ onClose }) {
   }, []);
 
   const handleAddUser = async () => {
+    setNewUserNameError("");
+
     if (!newUserName.trim()) {
+      setNewUserNameError("担当者名を入力してください");
       return;
     }
 
@@ -45,7 +52,7 @@ function TaskForm({ onClose }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: newUserName,
+          name: newUserName.trim(),
         }),
       });
 
@@ -66,22 +73,44 @@ function TaskForm({ onClose }) {
       });
 
       setAssignee(addedUser.name);
+      setAssigneeError("");
       setNewUserName("");
+      setNewUserNameError("");
       setIsAddingUser(false);
     } catch (error) {
       console.error(error);
+      setNewUserNameError("担当者の追加に失敗しました");
     }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    setTitleError("");
+    setAssigneeError("");
+
+    let hasError = false;
+
+    if (!title.trim()) {
+      setTitleError("タスク名を入力してください");
+      hasError = true;
+    }
+
+    if (!assignee.trim()) {
+      setAssigneeError("担当者を選択してください");
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
     const newTask = {
-      title: title,
-      assignee: assignee,
+      title: title.trim(),
+      assignee: assignee.trim(),
       priority: priority,
       status: status,
-      description: description,
+      description: description.trim(),
     };
 
     const isSuccess = await addTask(newTask);
@@ -94,6 +123,9 @@ function TaskForm({ onClose }) {
       setDescription("");
       setNewUserName("");
       setIsAddingUser(false);
+      setTitleError("");
+      setAssigneeError("");
+      setNewUserNameError("");
 
       onClose();
     }
@@ -109,8 +141,17 @@ function TaskForm({ onClose }) {
               id="title"
               type="text"
               value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              onChange={(event) => {
+                setTitle(event.target.value);
+
+                if (event.target.value.trim()) {
+                  setTitleError("");
+                }
+              }}
+              placeholder="タスク名を入力"
             />
+
+            {titleError && <p className="form-error">{titleError}</p>}
           </div>
 
           <div className="task-form-row">
@@ -120,7 +161,13 @@ function TaskForm({ onClose }) {
               <select
                 id="assignee"
                 value={assignee}
-                onChange={(event) => setAssignee(event.target.value)}
+                onChange={(event) => {
+                  setAssignee(event.target.value);
+
+                  if (event.target.value.trim()) {
+                    setAssigneeError("");
+                  }
+                }}
               >
                 <option value="">担当者を選択</option>
                 {users.map((user) => (
@@ -139,12 +186,20 @@ function TaskForm({ onClose }) {
               </button>
             </div>
 
+            {assigneeError && <p className="form-error">{assigneeError}</p>}
+
             {isAddingUser && (
               <div className="assignee-add-row">
                 <input
                   type="text"
                   value={newUserName}
-                  onChange={(event) => setNewUserName(event.target.value)}
+                  onChange={(event) => {
+                    setNewUserName(event.target.value);
+
+                    if (event.target.value.trim()) {
+                      setNewUserNameError("");
+                    }
+                  }}
                   placeholder="新しい担当者名"
                 />
 
@@ -161,12 +216,17 @@ function TaskForm({ onClose }) {
                   className="assignee-cancel-button"
                   onClick={() => {
                     setNewUserName("");
+                    setNewUserNameError("");
                     setIsAddingUser(false);
                   }}
                 >
                   キャンセル
                 </button>
               </div>
+            )}
+
+            {newUserNameError && (
+              <p className="form-error">{newUserNameError}</p>
             )}
           </div>
 
