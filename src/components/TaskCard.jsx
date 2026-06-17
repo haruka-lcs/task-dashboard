@@ -33,12 +33,7 @@ function TaskCard({ task, onClick }) {
         </div>
       </div>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          deleteTask(task.id);
-        }}
-      >
+      <button className="delete-button" onClick={handleDelete}>
         削除
       </button>
     </div>
