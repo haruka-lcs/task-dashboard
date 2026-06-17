@@ -34,7 +34,8 @@ app.MapGet("/api/tasks", async (TaskContext context) =>
             title = task.Title,
             assignee = task.User != null ? task.User.Name : "",
             priority = task.Priority != null ? task.Priority.Name : "",
-            status = task.Status != null ? task.Status.Name : ""
+            status = task.Status != null ? task.Status.Name : "",
+            description = task.Description
         })
         .ToListAsync();
 
@@ -87,7 +88,8 @@ app.MapPost("/api/tasks", async (CreateTaskRequest request, TaskContext context)
         Title = request.Title,
         User = user,
         Priority = priority,
-        Status = status
+        Status = status,
+        Description = request.Description
     };
 
     context.Tasks.Add(task);
@@ -99,7 +101,8 @@ app.MapPost("/api/tasks", async (CreateTaskRequest request, TaskContext context)
         title = task.Title,
         assignee = user.Name,
         priority = priority.Name,
-        status = status.Name
+        status = status.Name,
+        description = task.Description
     });
 });
 
@@ -129,4 +132,6 @@ public class CreateTaskRequest
     public string Priority { get; set; } = string.Empty;
 
     public string Status { get; set; } = string.Empty;
+
+    public string Description { get; set; } = string.Empty;
 }

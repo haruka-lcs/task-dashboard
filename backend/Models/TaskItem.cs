@@ -14,4 +14,5 @@ public class TaskItem
 
     public int StatusId { get; set; }
     public Status? Status { get; set; }
+    public string Description { get; set; } = string.Empty;
 }

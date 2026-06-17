@@ -8,6 +8,7 @@ function TaskForm({ onClose }) {
   const [assignee, setAssignee] = useState("");
   const [priority, setPriority] = useState("中");
   const [status, setStatus] = useState("未着手");
+  const [description, setDescription] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -17,11 +18,18 @@ function TaskForm({ onClose }) {
       assignee: assignee,
       priority: priority,
       status: status,
+      description: description,
     };
 
     const isSuccess = await addTask(newTask);
 
     if (isSuccess) {
+      setTitle("");
+      setAssignee("");
+      setPriority("中");
+      setStatus("未着手");
+      setDescription("");
+
       onClose();
     }
   };
@@ -74,6 +82,17 @@ function TaskForm({ onClose }) {
               <option value="進行中">進行中</option>
               <option value="完了">完了</option>
             </select>
+          </div>
+
+          <div className="task-form-row">
+            <label htmlFor="description">詳細</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="タスクの内容・目的・注意点などを入力"
+              rows="5"
+            />
           </div>
 
           <div className="task-form-actions">

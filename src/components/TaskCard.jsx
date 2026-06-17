@@ -1,12 +1,18 @@
 import { useTheme } from "../contexts/ThemeContext";
 import { useTask } from "../contexts/TaskContext";
 
-function TaskCard({ task }) {
+function TaskCard({ task, onClick }) {
   const { theme } = useTheme();
   const { deleteTask } = useTask();
 
+  const handleDelete = async (event) => {
+    event.stopPropagation();
+
+    await deleteTask(task.id);
+  };
+
   return (
-    <div className={`task-card ${theme}`}>
+    <div className={`task-card ${theme}`} onClick={onClick}>
       <h2>{task.title}</h2>
 
       <p className="assignee">担当：{task.assignee}</p>
@@ -27,7 +33,12 @@ function TaskCard({ task }) {
         </div>
       </div>
 
-      <button className="delete-button" onClick={() => deleteTask(task.id)}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          deleteTask(task.id);
+        }}
+      >
         削除
       </button>
     </div>
