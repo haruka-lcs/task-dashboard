@@ -74,6 +74,39 @@ export function TaskProvider({ children }) {
     }
   };
 
+  const updateTask = async (id, updatedTask) => {
+    try {
+      setError("");
+
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTask),
+      });
+
+      if (!response.ok) {
+        throw new Error("タスクの更新に失敗しました");
+      }
+
+      const savedTask = await response.json();
+
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === id ? savedTask : task
+        )
+      );
+
+      return savedTask;
+    } catch (error) {
+      console.error(error);
+      setError("タスクを更新できませんでした");
+
+      return null;
+    }
+  };
+
   const deleteTask = async (id) => {
     try {
       setError("");
@@ -107,6 +140,7 @@ export function TaskProvider({ children }) {
         setFilter,
         filteredTasks,
         addTask,
+        updateTask,
         deleteTask,
         loading,
         error,
