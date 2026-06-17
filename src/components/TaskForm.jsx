@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTask } from "../contexts/TaskContext";
 
 function TaskForm({ onClose }) {
@@ -9,6 +9,69 @@ function TaskForm({ onClose }) {
   const [priority, setPriority] = useState("中");
   const [status, setStatus] = useState("未着手");
   const [description, setDescription] = useState("");
+
+  const [users, setUsers] = useState([]);
+  const [isAddingUser, setIsAddingUser] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("http://localhost:5228/api/users");
+
+        if (!response.ok) {
+          throw new Error("担当者一覧の取得に失敗しました");
+        }
+
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleAddUser = async () => {
+    if (!newUserName.trim()) {
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5228/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newUserName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("担当者の追加に失敗しました");
+      }
+
+      const addedUser = await response.json();
+
+      setUsers((prevUsers) => {
+        const exists = prevUsers.some((user) => user.id === addedUser.id);
+
+        if (exists) {
+          return prevUsers;
+        }
+
+        return [...prevUsers, addedUser];
+      });
+
+      setAssignee(addedUser.name);
+      setNewUserName("");
+      setIsAddingUser(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -29,6 +92,8 @@ function TaskForm({ onClose }) {
       setPriority("中");
       setStatus("未着手");
       setDescription("");
+      setNewUserName("");
+      setIsAddingUser(false);
 
       onClose();
     }
@@ -50,12 +115,59 @@ function TaskForm({ onClose }) {
 
           <div className="task-form-row">
             <label htmlFor="assignee">担当者名</label>
-            <input
-              id="assignee"
-              type="text"
-              value={assignee}
-              onChange={(event) => setAssignee(event.target.value)}
-            />
+
+            <div className="assignee-select-row">
+              <select
+                id="assignee"
+                value={assignee}
+                onChange={(event) => setAssignee(event.target.value)}
+              >
+                <option value="">担当者を選択</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.name}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                className="assignee-add-button"
+                onClick={() => setIsAddingUser(true)}
+              >
+                ＋追加
+              </button>
+            </div>
+
+            {isAddingUser && (
+              <div className="assignee-add-row">
+                <input
+                  type="text"
+                  value={newUserName}
+                  onChange={(event) => setNewUserName(event.target.value)}
+                  placeholder="新しい担当者名"
+                />
+
+                <button
+                  type="button"
+                  className="assignee-save-button"
+                  onClick={handleAddUser}
+                >
+                  保存
+                </button>
+
+                <button
+                  type="button"
+                  className="assignee-cancel-button"
+                  onClick={() => {
+                    setNewUserName("");
+                    setIsAddingUser(false);
+                  }}
+                >
+                  キャンセル
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="task-form-row">
